@@ -1,5 +1,6 @@
 import React from 'react';
-import { Card, Badge } from 'react-bootstrap';
+import { Card, Badge, Button } from 'react-bootstrap';
+import ReactMarkdown from 'react-markdown';
 
 export default function Job({ job }) {
 	return (
@@ -15,8 +16,15 @@ export default function Job({ job }) {
 						</Card.Subtitle>
 						<Badge variant="secondary" className="mr-2">{job.type}</Badge>
 						<Badge variant="secondary">{job.location}</Badge>
+						<div style={{ wordBreak: 'break-all'}}>
+							<ReactMarkdown source={job.how_to_apply} />
+						</div>
 					</div>
+					<img className="d-sm-none d-md-block" height="50" src={job.company_logo} alt={job.company} />
 				</div>
+				<Card.Text>
+					<Button variant="primary">View Details</Button>
+				</Card.Text>
 			</Card.Body>
 		</Card>
 	)
