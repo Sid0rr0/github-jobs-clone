@@ -1,23 +1,29 @@
-import { useReducer, useEffect } from 'react';
-import axios from 'axios';
+import { useReducer, useEffect } from "react";
+import axios from "axios";
 
 const ACTIONS = {
-	MAKE_REQUEST: 'make_request',
-	GET_DATA: 'get_data',
-	ERROOR: 'error',
-	UPDATE_HAS_NEXT_PAGE: 'update_has_next_page'
+	MAKE_REQUEST: "make_request",
+	GET_DATA: "get_data",
+	ERROOR: "error",
+	UPDATE_HAS_NEXT_PAGE: "update_has_next_page",
 };
 
-const BASE_URL = 'https://cors-anywhere.herokuapp.com/https://jobs.github.com/positions.json';
+const BASE_URL =
+	"https://cors-anywhere.herokuapp.com/https://jobs.github.com/positions.json";
 
 function reducer(state, action) {
-	switch(action.type) {
+	switch (action.type) {
 		case ACTIONS.MAKE_REQUEST:
 			return { loading: true, jobs: [] };
 		case ACTIONS.GET_DATA:
 			return { ...state, loading: false, jobs: action.payload.jobs };
 		case ACTIONS.ERROOR:
-			return { ...state, loading: false, error: action.payload.error, jobs: [] };
+			return {
+				...state,
+				loading: false,
+				error: action.payload.error,
+				jobs: [],
+			};
 		case ACTIONS.UPDATE_HAS_NEXT_PAGE:
 			return { ...state, hasNextPage: action.payload.hasNextPage };
 		default:
@@ -30,28 +36,40 @@ export default function useFetchJobs(params, page) {
 
 	useEffect(() => {
 		const cancelToken1 = axios.CancelToken.source();
-		
+
 		dispatch({ type: ACTIONS.MAKE_REQUEST });
-		axios.get(BASE_URL, {
-			cancelToken: cancelToken1.token,
-			params: { markdown: true, page: page, ...params }
-		}).then(res => {
-			dispatch({ type: ACTIONS.GET_DATA, payload: { jobs: res.data }});
-		}).catch(e => {
-			if(axios.isCancel(e)) return;
-			dispatch({ type: ACTIONS.ERROOR, payload: { error: e } });
-		});
-		
+		axios
+			.get(BASE_URL, {
+				cancelToken: cancelToken1.token,
+				params: { markdown: true, page: page, ...params },
+			})
+			.then(res => {
+				dispatch({
+					type: ACTIONS.GET_DATA,
+					payload: { jobs: res.data },
+				});
+			})
+			.catch(e => {
+				if (axios.isCancel(e)) return;
+				dispatch({ type: ACTIONS.ERROOR, payload: { error: e } });
+			});
+
 		const cancelToken2 = axios.CancelToken.source();
-		axios.get(BASE_URL, {
-			cancelToken: cancelToken2.token,
-			params: { markdown: true, page: page + 1, ...params }
-		}).then(res => {
-			dispatch({ type: ACTIONS.UPDATE_HAS_NEXT_PAGE, payload: { hasNextPage: res.data.length !== 0 } });
-		}).catch(e => {
-			if (axios.isCancel(e)) return;
-			dispatch({ type: ACTIONS.ERROOR, payload: { error: e } });
-		});
+		axios
+			.get(BASE_URL, {
+				cancelToken: cancelToken2.token,
+				params: { markdown: true, page: page + 1, ...params },
+			})
+			.then(res => {
+				dispatch({
+					type: ACTIONS.UPDATE_HAS_NEXT_PAGE,
+					payload: { hasNextPage: res.data.length !== 0 },
+				});
+			})
+			.catch(e => {
+				if (axios.isCancel(e)) return;
+				dispatch({ type: ACTIONS.ERROOR, payload: { error: e } });
+			});
 
 		return () => {
 			cancelToken1.cancel();
